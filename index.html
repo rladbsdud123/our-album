@@ -14,12 +14,15 @@
   --f-display: "Gowun Batang", "Nanum Myeongjo", "AppleMyungjo", serif;
   --f-body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   --f-hand: "Nanum Pen Script", "Gowun Dodum", cursive;
+  --bg-photo: none;
+  --veil-top: rgba(241,239,244,.55); --veil-bottom: rgba(241,239,244,.45); --glass: rgba(255,255,255,.72);
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --paper: #16131A; --card: #221E28; --ink: #EEE9F3; --muted: #A39AAD; --line: #362F3E;
     --accent: #F07D95; --accent-soft: #3B2430; --shade: rgba(0,0,0,.45); --veil: rgba(6,4,9,.94);
+    --veil-top: rgba(22,19,26,.55); --veil-bottom: rgba(22,19,26,.45); --glass: rgba(34,30,40,.72);
     color-scheme: dark;
   }
 }
@@ -33,6 +36,11 @@ body {
   padding-top: calc(28px + env(safe-area-inset-top, 0px));
   padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
 }
+body { isolation: isolate; }
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1;
+  background: linear-gradient(to bottom, var(--veil-top), var(--veil-bottom) 40%), var(--bg-photo, none) center 45% / cover no-repeat;
+}
 img { max-width: 100%; }
 [hidden] { display: none !important; }
 button { font: inherit; color: inherit; cursor: pointer; }
@@ -40,18 +48,34 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .wrap { max-width: 1080px; margin: 0 auto; display: flex; flex-direction: column; gap: 36px; }
 
 .head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px; align-items: end; border-bottom: 1px solid var(--line); padding-bottom: 22px; }
-.head h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(30px, 6vw, 46px); line-height: 1.15; margin: 0; text-wrap: balance; }
+.head h1 { text-shadow: 0 1px 12px var(--glass); font-family: var(--f-display); font-weight: 700; font-size: clamp(30px, 6vw, 46px); line-height: 1.15; margin: 0; text-wrap: balance; }
 .head .count { color: var(--muted); margin: 6px 0 0; font-size: 14px; font-variant-numeric: tabular-nums; }
 .dday { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
 .dday .n { font-family: var(--f-hand); font-size: clamp(44px, 9vw, 64px); line-height: .9; color: var(--accent); }
-.dday .l { font-size: 13px; color: var(--muted); }
-.dday .next { font-size: 12px; color: var(--muted); opacity: .85; }
+.dday .l { font-size: 13px; color: var(--ink); }
+.dday .next { font-size: 12px; color: var(--ink); opacity: .8; }
 
-.month { display: flex; flex-direction: column; gap: 18px; }
-.month h2 { margin: 0; display: flex; align-items: baseline; gap: 12px; font-family: var(--f-display); font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+#album { display: flex; flex-direction: column; gap: 44px; }
+/* 포토북: 달 = 챕터, 날짜 = 한 페이지 */
+.month { display: flex; flex-direction: column; gap: 22px; }
+.month h2 { margin: 0; align-self: flex-start; display: flex; align-items: baseline; gap: 12px; font-family: var(--f-display); font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; background: var(--glass); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); padding: 4px 14px; border-radius: 999px; }
 .month h2 small { font-family: var(--f-body); font-weight: 400; font-size: 13px; color: var(--muted); }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 26px 20px; }
-@media (max-width: 440px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 12px; } }
+.page { background: var(--card); border-radius: 3px; padding: 22px 22px 18px; box-shadow: 0 1px 2px var(--shade), 0 18px 40px -22px var(--shade); display: flex; flex-direction: column; gap: 16px; position: relative; }
+.page::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 14px; background: linear-gradient(to right, var(--shade), transparent); border-radius: 3px 0 0 3px; pointer-events: none; }
+.page-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; border-bottom: 1px dashed var(--line); padding-bottom: 10px; }
+.page-head .day { font-family: var(--f-hand); font-size: 32px; line-height: 1; }
+.page-head .day small { font-family: var(--f-body); font-size: 13px; color: var(--muted); margin-left: 8px; }
+.page-head .dn { font-family: var(--f-hand); font-size: 26px; color: var(--accent); line-height: 1; white-space: nowrap; }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 16px; width: 100%; max-width: 860px; margin: 0 auto; }
+.grid.n1 { grid-template-columns: minmax(0, 520px); justify-content: center; }
+.grid.n2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid.n3 > :first-child, .grid.nmany > :first-child { grid-column: span 2; grid-row: span 2; }
+@media (max-width: 560px) {
+  .page { padding: 16px 14px 14px; }
+  .grid, .grid.n3, .grid.nmany { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 10px; }
+  .grid.n3 > :first-child, .grid.nmany > :first-child { grid-row: auto; }
+  .grid.n1 { grid-template-columns: minmax(0, 1fr); }
+}
 
 .print { background: var(--card); padding: 10px 10px 6px; border: 0; text-align: left; box-shadow: 0 1px 2px var(--shade), 0 8px 18px -10px var(--shade); transform: rotate(var(--tilt, 0deg)); transition: transform .2s ease, box-shadow .2s ease; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .print:hover, .print:focus-visible { transform: rotate(0deg) translateY(-3px); box-shadow: 0 2px 4px var(--shade), 0 16px 28px -12px var(--shade); }
@@ -60,7 +84,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .print .cap { font-family: var(--f-hand); font-size: 21px; line-height: 1.15; min-height: 26px; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .print .meta { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
 
-.empty { border: 1.5px dashed var(--line); border-radius: 16px; padding: 48px 20px; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.empty { background: var(--glass); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border: 1.5px dashed var(--line); border-radius: 16px; padding: 48px 20px; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; }
 .empty .big { font-family: var(--f-hand); font-size: 34px; line-height: 1.1; }
 .empty p { margin: 0; color: var(--muted); max-width: 44ch; }
 
@@ -193,8 +217,17 @@ const PHOTO_FOLDERS = ['', 'photos'];  // 사진을 찾을 폴더 ('' = 맨 위)
     return items.filter(x => x.type === 'file' && IMG.test(x.name)).map(x => ({ name: x.name, src: info.base + x.path.split('/').map(encodeURIComponent).join('/'), sha: x.sha }));
   }
 
+  // background 폴더에 있는 첫 사진을 배경으로 써요
+  async function loadBackground(info) {
+    try {
+      const list = await listFolder(info, 'background');
+      if (list.length) document.documentElement.style.setProperty('--bg-photo', `url("${list[0].src}")`);
+    } catch (e) {}
+  }
+
   async function load() {
     const info = repoInfo();
+    if (info) loadBackground(info);
     if (!info) {
       empty('GitHub에 올리면 사진이 보여요', '이 파일을 GitHub Pages에 올리고 같은 저장소에 사진을 넣으면, 여기에 달별로 모여요.');
       return;
@@ -246,14 +279,40 @@ const PHOTO_FOLDERS = ['', 'photos'];  // 사진을 찾을 폴더 ('' = 맨 위)
     $('count').textContent = photos.length ? `사진 ${photos.length}장` : '';
     if (!photos.length) { empty('첫 사진을 올려 볼까요?', 'GitHub 저장소에 사진을 올리면 1~2분 뒤 여기에 나타나요.'); return; }
     const root = $('album'); root.textContent = '';
-    const groups = new Map();
-    photos.forEach((p, i) => { const k = (p.date || '0000-00').slice(0, 7); if (!groups.has(k)) groups.set(k, []); groups.get(k).push([p, i]); });
-    for (const [k, items] of groups) {
+    // 달(챕터) → 날짜(페이지) 두 단계로 묶기
+    const months = new Map();
+    photos.forEach((p, i) => {
+      const mk = (p.date || '0000-00').slice(0, 7), dk = p.date || 'none';
+      if (!months.has(mk)) months.set(mk, new Map());
+      const days = months.get(mk);
+      if (!days.has(dk)) days.set(dk, []);
+      days.get(dk).push([p, i]);
+    });
+    const WD = ['일', '월', '화', '수', '목', '금', '토'];
+    for (const [k, days] of months) {
       const sec = document.createElement('section'); sec.className = 'month';
       const h = document.createElement('h2');
       h.textContent = k === '0000-00' ? '날짜 모름' : `${k.slice(0, 4)}. ${k.slice(5, 7)}`;
-      const sm = document.createElement('small'); sm.textContent = `${items.length}장`; h.append(sm);
-      const g = document.createElement('div'); g.className = 'grid';
+      const sm = document.createElement('small'); sm.textContent = k === '0000-00' ? '' : `${days.size}일의 기록`; h.append(sm);
+      sec.append(h);
+      for (const [dk, items] of days) {
+        const page = document.createElement('article'); page.className = 'page';
+        const head = document.createElement('div'); head.className = 'page-head';
+        const day = document.createElement('div'); day.className = 'day';
+        const dn = document.createElement('div'); dn.className = 'dn';
+        if (dk === 'none') { day.textContent = '언젠가'; }
+        else {
+          const [y, m, d] = dk.split('-').map(Number), dt = new Date(y, m - 1, d);
+          day.textContent = `${m}월 ${d}일`;
+          const wd = document.createElement('small'); wd.textContent = `${WD[dt.getDay()]}요일`; day.append(wd);
+          const n = Math.round((dt - met) / 86400000) + 1;
+          dn.textContent = n >= 1 ? `D+${n}` : '만나기 전';
+        }
+        head.append(day, dn);
+        const g = document.createElement('div');
+        g.className = 'grid ' + (items.length === 1 ? 'n1' : items.length === 2 ? 'n2' : items.length === 3 ? 'n3' : 'nmany');
+        page.append(head, g);
+        sec.append(page);
       for (const [p, i] of items) {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'print';
         b.style.setProperty('--tilt', tilt(p.name) + 'deg');
@@ -262,12 +321,13 @@ const PHOTO_FOLDERS = ['', 'photos'];  // 사진을 찾을 폴더 ('' = 맨 위)
         const img = document.createElement('img'); img.loading = 'lazy'; img.decoding = 'async'; img.alt = p.cap; img.src = p.src;
         ph.append(img);
         const cap = document.createElement('div'); cap.className = 'cap'; cap.textContent = p.cap;
-        const meta = document.createElement('div'); meta.className = 'meta'; meta.textContent = p.date ? p.date.slice(5).replace('-', '.') : '';
-        b.append(ph, cap, meta);
+        b.append(ph);
+        if (p.cap) b.append(cap);
         b.onclick = () => show(i);
         g.append(b);
       }
-      sec.append(h, g); root.append(sec);
+      }
+      root.append(sec);
     }
   }
 
